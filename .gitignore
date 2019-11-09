@@ -66,6 +66,7 @@ ipch/
 *.cachefile
 
 # Visual Studio profiler
+.vs/
 *.psess
 *.vsp
 *.vspx

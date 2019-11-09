@@ -31,7 +31,7 @@ public:
 
 	void				create(int x, int y, int width, int height, HWND parent);
 	void				open(LPCWSTR url, bool reload = FALSE);
-	HWND				wnd()	{ return m_hWnd;	}
+	HWND				wnd() { return m_hWnd; }
 	void				refresh();
 	void				back();
 	void				forward();
@@ -62,13 +62,13 @@ protected:
 	virtual void		OnLButtonUp(int x, int y);
 	virtual void		OnMouseLeave();
 	virtual void		OnPageReady();
-	
+
 	void				redraw(LPRECT rcDraw, BOOL update);
 	void				update_scroll();
 	void				update_cursor();
 	void				create_dib(int width, int height);
 	void				scroll_to(int new_left, int new_top);
-	
+
 
 private:
 	static LRESULT	CALLBACK WndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);

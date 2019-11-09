@@ -5,33 +5,33 @@
 #include "el_omnibox.h"
 
 #ifdef LITEHTML_UTF8
-	#define str_cmp	strcmp
+#define str_cmp	strcmp
 #else
-	#define str_cmp	lstrcmp
+#define str_cmp	lstrcmp
 #endif
 
-CToolbarWnd::CToolbarWnd( HINSTANCE hInst, CBrowserWnd* parent )
+CToolbarWnd::CToolbarWnd(HINSTANCE hInst, CBrowserWnd* parent)
 {
 	m_inCapture = FALSE;
-	m_omnibox	= nullptr;
-	m_parent	= parent;
-	m_hInst		= hInst;
-	m_hWnd		= NULL;
+	m_omnibox = nullptr;
+	m_parent = parent;
+	m_hInst = hInst;
+	m_hWnd = NULL;
 
 	WNDCLASS wc;
-	if(!GetClassInfo(m_hInst, TOOLBARWND_CLASS, &wc))
+	if (!GetClassInfo(m_hInst, TOOLBARWND_CLASS, &wc))
 	{
 		ZeroMemory(&wc, sizeof(wc));
-		wc.style          = CS_HREDRAW | CS_VREDRAW;
-		wc.lpfnWndProc    = (WNDPROC)CToolbarWnd::WndProc;
-		wc.cbClsExtra     = 0;
-		wc.cbWndExtra     = 0;
-		wc.hInstance      = m_hInst;
-		wc.hIcon          = NULL;
-		wc.hCursor        = NULL/*LoadCursor(NULL, IDC_ARROW)*/;
-		wc.hbrBackground  = (HBRUSH) (COLOR_WINDOW + 1);
-		wc.lpszMenuName   = NULL;
-		wc.lpszClassName  = TOOLBARWND_CLASS;
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+		wc.lpfnWndProc = (WNDPROC)CToolbarWnd::WndProc;
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = 0;
+		wc.hInstance = m_hInst;
+		wc.hIcon = NULL;
+		wc.hCursor = NULL/*LoadCursor(NULL, IDC_ARROW)*/;
+		wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wc.lpszMenuName = NULL;
+		wc.lpszClassName = TOOLBARWND_CLASS;
 
 		RegisterClass(&wc);
 	}
@@ -46,19 +46,19 @@ CToolbarWnd::~CToolbarWnd(void)
 	}
 }
 
-LRESULT CALLBACK CToolbarWnd::WndProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK CToolbarWnd::WndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam)
 {
 	CToolbarWnd* pThis = NULL;
-	if(IsWindow(hWnd))
+	if (IsWindow(hWnd))
 	{
 		pThis = (CToolbarWnd*)GetProp(hWnd, TEXT("toolbar_this"));
-		if(pThis && pThis->m_hWnd != hWnd)
+		if (pThis && pThis->m_hWnd != hWnd)
 		{
 			pThis = NULL;
 		}
 	}
 
-	if(pThis || uMessage == WM_CREATE)
+	if (pThis || uMessage == WM_CREATE)
 	{
 		switch (uMessage)
 		{
@@ -78,51 +78,51 @@ LRESULT CALLBACK CToolbarWnd::WndProc( HWND hWnd, UINT uMessage, WPARAM wParam, 
 			switch (wParam)
 			{
 			case VK_RETURN:
-				{
-					std::wstring url = pThis->m_omnibox->get_url();
-					pThis->m_omnibox->select_all();
-					pThis->m_parent->open(url.c_str());
-				}
-				break;
+			{
+				std::wstring url = pThis->m_omnibox->get_url();
+				pThis->m_omnibox->select_all();
+				pThis->m_parent->open(url.c_str());
+			}
+			break;
 			}
 			return 0;
 		case WM_OMNIBOX_CLICKED:
 			pThis->OnOmniboxClicked();
 			break;
 		case WM_UPDATE_CONTROL:
-			{
-				LPRECT rcDraw = (LPRECT)lParam;
-				InvalidateRect(hWnd, rcDraw, FALSE);
-			}
-			break;
+		{
+			LPRECT rcDraw = (LPRECT)lParam;
+			InvalidateRect(hWnd, rcDraw, FALSE);
+		}
+		break;
 		case WM_SETCURSOR:
 			pThis->update_cursor();
 			break;
 		case WM_ERASEBKGND:
 			return TRUE;
 		case WM_CREATE:
-			{
-				LPCREATESTRUCT lpcs = (LPCREATESTRUCT)lParam;
-				pThis = (CToolbarWnd*)(lpcs->lpCreateParams);
-				SetProp(hWnd, TEXT("toolbar_this"), (HANDLE) pThis);
-				pThis->m_hWnd = hWnd;
-				pThis->OnCreate();
-			}
-			break;
+		{
+			LPCREATESTRUCT lpcs = (LPCREATESTRUCT)lParam;
+			pThis = (CToolbarWnd*)(lpcs->lpCreateParams);
+			SetProp(hWnd, TEXT("toolbar_this"), (HANDLE)pThis);
+			pThis->m_hWnd = hWnd;
+			pThis->OnCreate();
+		}
+		break;
 		case WM_PAINT:
-			{
-				PAINTSTRUCT ps;
-				HDC hdc = BeginPaint(hWnd, &ps);
+		{
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hWnd, &ps);
 
-				simpledib::dib dib;
+			simpledib::dib dib;
 
-				dib.beginPaint(hdc, &ps.rcPaint);
-				pThis->OnPaint(&dib, &ps.rcPaint);
-				dib.endPaint();
+			dib.beginPaint(hdc, &ps.rcPaint);
+			pThis->OnPaint(&dib, &ps.rcPaint);
+			dib.endPaint();
 
-				EndPaint(hWnd, &ps);
-			}
-			return 0;
+			EndPaint(hWnd, &ps);
+		}
+		return 0;
 		case WM_KILLFOCUS:
 			if (pThis->m_omnibox && pThis->m_omnibox->have_focus())
 			{
@@ -138,22 +138,22 @@ LRESULT CALLBACK CToolbarWnd::WndProc( HWND hWnd, UINT uMessage, WPARAM wParam, 
 			delete pThis;
 			return 0;
 		case WM_MOUSEMOVE:
+		{
+			TRACKMOUSEEVENT tme;
+			ZeroMemory(&tme, sizeof(TRACKMOUSEEVENT));
+			tme.cbSize = sizeof(TRACKMOUSEEVENT);
+			tme.dwFlags = TME_QUERY;
+			tme.hwndTrack = hWnd;
+			TrackMouseEvent(&tme);
+			if (!(tme.dwFlags & TME_LEAVE))
 			{
-				TRACKMOUSEEVENT tme;
-				ZeroMemory(&tme, sizeof(TRACKMOUSEEVENT));
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags		= TME_QUERY;
-				tme.hwndTrack	= hWnd;
+				tme.dwFlags = TME_LEAVE;
+				tme.hwndTrack = hWnd;
 				TrackMouseEvent(&tme);
-				if(!(tme.dwFlags & TME_LEAVE))
-				{
-					tme.dwFlags		= TME_LEAVE;
-					tme.hwndTrack	= hWnd;
-					TrackMouseEvent(&tme);
-				}
-				pThis->OnMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			}
-			return 0;
+			pThis->OnMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		}
+		return 0;
 		case WM_MOUSELEAVE:
 			pThis->OnMouseLeave();
 			return 0;
@@ -228,16 +228,16 @@ void CToolbarWnd::OnCreate()
 
 }
 
-void CToolbarWnd::OnPaint( simpledib::dib* dib, LPRECT rcDraw )
+void CToolbarWnd::OnPaint(simpledib::dib* dib, LPRECT rcDraw)
 {
-	if(m_doc)
+	if (m_doc)
 	{
-		cairo_surface_t* surface = cairo_image_surface_create_for_data((unsigned char*) dib->bits(), CAIRO_FORMAT_ARGB32, dib->width(), dib->height(), dib->width() * 4);
+		cairo_surface_t* surface = cairo_image_surface_create_for_data((unsigned char*)dib->bits(), CAIRO_FORMAT_ARGB32, dib->width(), dib->height(), dib->width() * 4);
 		cairo_t* cr = cairo_create(surface);
 
 		POINT pt;
 		GetWindowOrgEx(dib->hdc(), &pt);
-		if(pt.x != 0 || pt.y != 0)
+		if (pt.x != 0 || pt.y != 0)
 		{
 			cairo_translate(cr, -pt.x, -pt.y);
 		}
@@ -245,14 +245,14 @@ void CToolbarWnd::OnPaint( simpledib::dib* dib, LPRECT rcDraw )
 		cairo_paint(cr);
 
 		litehtml::position clip(rcDraw->left, rcDraw->top, rcDraw->right - rcDraw->left, rcDraw->bottom - rcDraw->top);
-		m_doc->draw((litehtml::uint_ptr) cr, 0, 0, &clip);
+		m_doc->draw((litehtml::uint_ptr) cr, 0, 0, 0, &clip);
 
 		cairo_destroy(cr);
 		cairo_surface_destroy(surface);
 	}
 }
 
-void CToolbarWnd::OnSize( int width, int height )
+void CToolbarWnd::OnSize(int width, int height)
 {
 
 }
@@ -262,19 +262,19 @@ void CToolbarWnd::OnDestroy()
 
 }
 
-void CToolbarWnd::create( int x, int y, int width, HWND parent )
+void CToolbarWnd::create(int x, int y, int width, HWND parent)
 {
 #ifndef LITEHTML_UTF8
 	LPWSTR html = NULL;
 
 	HRSRC hResource = ::FindResource(m_hInst, L"toolbar.html", RT_HTML);
-	if(hResource)
+	if (hResource)
 	{
 		DWORD imageSize = ::SizeofResource(m_hInst, hResource);
-		if(imageSize)
+		if (imageSize)
 		{
 			LPCSTR pResourceData = (LPCSTR) ::LockResource(::LoadResource(m_hInst, hResource));
-			if(pResourceData)
+			if (pResourceData)
 			{
 				html = new WCHAR[imageSize * 3];
 				int ret = MultiByteToWideChar(CP_UTF8, 0, pResourceData, imageSize, html, imageSize * 3);
@@ -286,13 +286,13 @@ void CToolbarWnd::create( int x, int y, int width, HWND parent )
 	LPSTR html = NULL;
 
 	HRSRC hResource = ::FindResource(m_hInst, L"toolbar.html", RT_HTML);
-	if(hResource)
+	if (hResource)
 	{
 		DWORD imageSize = ::SizeofResource(m_hInst, hResource);
-		if(imageSize)
+		if (imageSize)
 		{
 			LPCSTR pResourceData = (LPCSTR) ::LockResource(::LoadResource(m_hInst, hResource));
-			if(pResourceData)
+			if (pResourceData)
 			{
 				html = new CHAR[imageSize + 1];
 				lstrcpynA(html, pResourceData, imageSize);
@@ -301,7 +301,7 @@ void CToolbarWnd::create( int x, int y, int width, HWND parent )
 		}
 	}
 #endif
-	m_hWnd = CreateWindow(TOOLBARWND_CLASS, L"toolbar", WS_CHILD | WS_VISIBLE, x, y, width, 1, parent, NULL, m_hInst, (LPVOID) this);
+	m_hWnd = CreateWindow(TOOLBARWND_CLASS, L"toolbar", WS_CHILD | WS_VISIBLE, x, y, width, 1, parent, NULL, m_hInst, (LPVOID)this);
 
 	m_doc = litehtml::document::createFromString(html, this, &m_context);
 	delete html;
@@ -309,7 +309,7 @@ void CToolbarWnd::create( int x, int y, int width, HWND parent )
 	MoveWindow(m_hWnd, x, y, width, m_doc->height(), TRUE);
 }
 
-void CToolbarWnd::make_url( LPCWSTR url, LPCWSTR basepath, std::wstring& out )
+void CToolbarWnd::make_url(LPCWSTR url, LPCWSTR basepath, std::wstring& out)
 {
 	out = url;
 }
@@ -317,7 +317,7 @@ void CToolbarWnd::make_url( LPCWSTR url, LPCWSTR basepath, std::wstring& out )
 cairo_container::image_ptr CToolbarWnd::get_image(LPCWSTR url, bool redraw_on_ready)
 {
 	cairo_container::image_ptr img = cairo_container::image_ptr(new CTxDIB);
-	if(!img->load(FindResource(m_hInst, url, RT_HTML), m_hInst))
+	if (!img->load(FindResource(m_hInst, url, RT_HTML), m_hInst))
 	{
 		img = nullptr;
 	}
@@ -325,12 +325,12 @@ cairo_container::image_ptr CToolbarWnd::get_image(LPCWSTR url, bool redraw_on_re
 	return img;
 }
 
-void CToolbarWnd::set_caption( const litehtml::tchar_t* caption )
+void CToolbarWnd::set_caption(const litehtml::tchar_t* caption)
 {
 
 }
 
-void CToolbarWnd::set_base_url( const litehtml::tchar_t* base_url )
+void CToolbarWnd::set_base_url(const litehtml::tchar_t* base_url)
 {
 
 }
@@ -340,12 +340,12 @@ void CToolbarWnd::link(std::shared_ptr<litehtml::document>& doc, litehtml::eleme
 
 }
 
-int CToolbarWnd::set_width( int width )
+int CToolbarWnd::set_width(int width)
 {
-	if(m_doc)
+	if (m_doc)
 	{
 		render_toolbar(width);
-		
+
 		return m_doc->height();
 	}
 	return 0;
@@ -361,7 +361,7 @@ void CToolbarWnd::on_page_loaded(LPCWSTR url)
 
 void CToolbarWnd::OnMouseMove(int x, int y)
 {
-	if(m_doc)
+	if (m_doc)
 	{
 		BOOL process = TRUE;
 		if (m_omnibox)
@@ -371,7 +371,7 @@ void CToolbarWnd::OnMouseMove(int x, int y)
 		if (!m_inCapture)
 		{
 			litehtml::position::vector redraw_boxes;
-			if (m_doc->on_mouse_over(x, y, x, y, redraw_boxes))
+			if (m_doc->on_mouse_over(x, y, 0, x, y, 0, redraw_boxes))
 			{
 				for (litehtml::position::vector::iterator box = redraw_boxes.begin(); box != redraw_boxes.end(); box++)
 				{
@@ -391,18 +391,18 @@ void CToolbarWnd::OnMouseMove(int x, int y)
 
 void CToolbarWnd::OnMouseLeave()
 {
-	if(m_doc)
+	if (m_doc)
 	{
 		litehtml::position::vector redraw_boxes;
-		if(m_doc->on_mouse_leave(redraw_boxes))
+		if (m_doc->on_mouse_leave(redraw_boxes))
 		{
-			for(litehtml::position::vector::iterator box = redraw_boxes.begin(); box != redraw_boxes.end(); box++)
+			for (litehtml::position::vector::iterator box = redraw_boxes.begin(); box != redraw_boxes.end(); box++)
 			{
 				RECT rcRedraw;
-				rcRedraw.left	= box->left();
-				rcRedraw.right	= box->right();
-				rcRedraw.top	= box->top();
-				rcRedraw.bottom	= box->bottom();
+				rcRedraw.left = box->left();
+				rcRedraw.right = box->right();
+				rcRedraw.top = box->top();
+				rcRedraw.bottom = box->bottom();
 				InvalidateRect(m_hWnd, &rcRedraw, TRUE);
 			}
 			UpdateWindow(m_hWnd);
@@ -418,7 +418,7 @@ void CToolbarWnd::OnOmniboxClicked()
 
 void CToolbarWnd::OnLButtonDown(int x, int y)
 {
-	if(m_doc)
+	if (m_doc)
 	{
 		BOOL process = TRUE;
 		if (m_omnibox && m_omnibox->OnLButtonDown(x, y))
@@ -428,7 +428,7 @@ void CToolbarWnd::OnLButtonDown(int x, int y)
 		if (process && !m_inCapture)
 		{
 			litehtml::position::vector redraw_boxes;
-			if (m_doc->on_lbutton_down(x, y, x, y, redraw_boxes))
+			if (m_doc->on_lbutton_down(x, y, 0, x, y, 0, redraw_boxes))
 			{
 				for (litehtml::position::vector::iterator box = redraw_boxes.begin(); box != redraw_boxes.end(); box++)
 				{
@@ -445,9 +445,9 @@ void CToolbarWnd::OnLButtonDown(int x, int y)
 	}
 }
 
-void CToolbarWnd::OnLButtonUp( int x, int y )
+void CToolbarWnd::OnLButtonUp(int x, int y)
 {
-	if(m_doc)
+	if (m_doc)
 	{
 		BOOL process = TRUE;
 		if (m_omnibox && m_omnibox->OnLButtonUp(x, y))
@@ -457,7 +457,7 @@ void CToolbarWnd::OnLButtonUp( int x, int y )
 		if (process && !m_inCapture)
 		{
 			litehtml::position::vector redraw_boxes;
-			if (m_doc->on_lbutton_up(x, y, x, y, redraw_boxes))
+			if (m_doc->on_lbutton_up(x, y, 0, x, y, 0, redraw_boxes))
 			{
 				for (litehtml::position::vector::iterator box = redraw_boxes.begin(); box != redraw_boxes.end(); box++)
 				{
@@ -478,7 +478,7 @@ struct
 {
 	LPCWSTR	name;
 	LPCWSTR	url;
-} g_bookmarks[] = 
+} g_bookmarks[] =
 {
 	{L"DMOZ",					L"http://www.dmoz.org/"},
 	{L"litehtml project",		L"https://github.com/litehtml/litehtml"},
@@ -494,28 +494,31 @@ struct
 	{NULL,						NULL},
 };
 
-void CToolbarWnd::on_anchor_click( const litehtml::tchar_t* url, const litehtml::element::ptr& el )
+void CToolbarWnd::on_anchor_click(const litehtml::tchar_t* url, const litehtml::element::ptr& el)
 {
-	if(!str_cmp(url, _t("back")))
+	if (!str_cmp(url, _t("back")))
 	{
 		m_parent->back();
-	} else if(!str_cmp(url, _t("forward")))
+	}
+	else if (!str_cmp(url, _t("forward")))
 	{
 		m_parent->forward();
-	} else if(!str_cmp(url, _t("reload")))
+	}
+	else if (!str_cmp(url, _t("reload")))
 	{
 		m_parent->reload();
-	} else if(!str_cmp(url, _t("bookmarks")))
+	}
+	else if (!str_cmp(url, _t("bookmarks")))
 	{
 		litehtml::position pos = el->get_placement();
 		POINT pt;
-		pt.x	= pos.right();
-		pt.y	= pos.bottom();
+		pt.x = pos.right();
+		pt.y = pos.bottom();
 		MapWindowPoints(m_hWnd, NULL, &pt, 1);
 
 		HMENU hMenu = CreatePopupMenu();
 
-		for(int i = 0; g_bookmarks[i].url; i++)
+		for (int i = 0; g_bookmarks[i].url; i++)
 		{
 			InsertMenu(hMenu, -1, MF_BYPOSITION | MF_STRING, i + 1, g_bookmarks[i].name);
 		}
@@ -523,16 +526,17 @@ void CToolbarWnd::on_anchor_click( const litehtml::tchar_t* url, const litehtml:
 		int ret = TrackPopupMenu(hMenu, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, NULL);
 		DestroyMenu(hMenu);
 
-		if(ret)
+		if (ret)
 		{
 			m_parent->open(g_bookmarks[ret - 1].url);
 		}
-	} else if(!str_cmp(url, _t("settings")))
+	}
+	else if (!str_cmp(url, _t("settings")))
 	{
 		litehtml::position pos = el->get_placement();
 		POINT pt;
-		pt.x	= pos.right();
-		pt.y	= pos.bottom();
+		pt.x = pos.right();
+		pt.y = pos.bottom();
 		MapWindowPoints(m_hWnd, NULL, &pt, 1);
 
 		HMENU hMenu = CreatePopupMenu();
@@ -541,12 +545,12 @@ void CToolbarWnd::on_anchor_click( const litehtml::tchar_t* url, const litehtml:
 		InsertMenu(hMenu, -1, MF_BYPOSITION | MF_STRING, 3, L"Calculate Render Time (10)");
 		InsertMenu(hMenu, -1, MF_BYPOSITION | MF_STRING, 4, L"Calculate Render Time (100)");
 		InsertMenu(hMenu, -1, MF_BYPOSITION | MF_SEPARATOR, 0, L"");
-		InsertMenu(hMenu, -1, MF_BYPOSITION | MF_STRING,	2, L"Exit");
+		InsertMenu(hMenu, -1, MF_BYPOSITION | MF_STRING, 2, L"Exit");
 
 		int ret = TrackPopupMenu(hMenu, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, NULL);
 		DestroyMenu(hMenu);
 
-		switch(ret)
+		switch (ret)
 		{
 		case 2:
 			PostQuitMessage(0);
@@ -564,7 +568,7 @@ void CToolbarWnd::on_anchor_click( const litehtml::tchar_t* url, const litehtml:
 	}
 }
 
-void CToolbarWnd::set_cursor( const litehtml::tchar_t* cursor )
+void CToolbarWnd::set_cursor(const litehtml::tchar_t* cursor)
 {
 	m_cursor = cursor;
 }
@@ -582,7 +586,7 @@ std::shared_ptr<litehtml::element> CToolbarWnd::create_element(const litehtml::t
 				{
 					m_omnibox = nullptr;
 				}
-
+				
 				m_omnibox = std::make_shared<el_omnibox>(doc, m_hWnd, this);
 				return m_omnibox;
 			}
@@ -593,15 +597,14 @@ std::shared_ptr<litehtml::element> CToolbarWnd::create_element(const litehtml::t
 
 void CToolbarWnd::import_css(litehtml::tstring& text, const litehtml::tstring& url, litehtml::tstring& baseurl)
 {
-
 }
 
-void CToolbarWnd::get_client_rect( litehtml::position& client ) const
+void CToolbarWnd::get_client_rect(litehtml::position& client) const
 {
 	RECT rcClient;
 	GetClientRect(m_hWnd, &rcClient);
-	client.x		= rcClient.left;
-	client.y		= rcClient.top;
-	client.width	= rcClient.right - rcClient.left;
-	client.height	= rcClient.bottom - rcClient.top;
+	client.x = rcClient.left;
+	client.y = rcClient.top;
+	client.width = rcClient.right - rcClient.left;
+	client.height = rcClient.bottom - rcClient.top;
 }

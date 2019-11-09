@@ -22,10 +22,10 @@ public:
 	virtual ~CToolbarWnd(void);
 
 	void create(int x, int y, int width, HWND parent);
-	HWND wnd()	{ return m_hWnd; }
+	HWND wnd() { return m_hWnd; }
 	int height()
 	{
-		if(m_doc)
+		if (m_doc)
 		{
 			return m_doc->height();
 		}

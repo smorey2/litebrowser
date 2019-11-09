@@ -12,7 +12,7 @@ public:
 	el_omnibox(const std::shared_ptr<litehtml::document>& doc, HWND parent, cairo_container* container);
 	~el_omnibox();
 
-	virtual void draw(litehtml::uint_ptr hdc, int x, int y, const litehtml::position* clip);
+	virtual void draw(litehtml::uint_ptr hdc, int x, int y, int z, const litehtml::position* clip);
 	virtual void parse_styles(bool is_reparse);
 	virtual void on_click();
 
@@ -46,5 +46,4 @@ public:
 	BOOL OnLButtonUp(int x, int y);
 	BOOL OnLButtonDblClick(int x, int y);
 	BOOL OnMouseMove(int x, int y);
-
 };

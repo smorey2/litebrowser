@@ -11,9 +11,9 @@ using namespace Gdiplus;
 CRITICAL_SECTION cairo_font::m_sync;
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+	HINSTANCE hPrevInstance,
+	LPTSTR    lpCmdLine,
+	int       nCmdShow)
 {
 	CoInitialize(NULL);
 	InitCommonControls();
@@ -28,12 +28,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		CBrowserWnd wnd(hInstance);
 
 		wnd.create();
-		if(lpCmdLine && lpCmdLine[0])
+		if (lpCmdLine && lpCmdLine[0])
 		{
 			wnd.open(lpCmdLine);
-		} else
+		}
+		else
 		{
-			wnd.open(L"http://www.dmoz.org/");
+			wnd.open(L"http://www.litehtml.com/");
 		}
 
 		MSG msg;

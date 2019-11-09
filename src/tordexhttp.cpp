@@ -4,8 +4,8 @@
 
 tordex::http::http()
 {
-	m_hSession					= NULL;
-	m_maxConnectionsPerServer	= 5;
+	m_hSession = NULL;
+	m_maxConnectionsPerServer = 5;
 	InitializeCriticalSectionAndSpinCount(&m_sync, 1000);
 }
 
@@ -13,26 +13,26 @@ tordex::http::http()
 tordex::http::~http()
 {
 	stop();
-	if(m_hSession)
+	if (m_hSession)
 	{
 		WinHttpCloseHandle(m_hSession);
 	}
 	DeleteCriticalSection(&m_sync);
 }
 
-BOOL tordex::http::open( LPCWSTR pwszUserAgent, DWORD dwAccessType, LPCWSTR pwszProxyName, LPCWSTR pwszProxyBypass )
+BOOL tordex::http::open(LPCWSTR pwszUserAgent, DWORD dwAccessType, LPCWSTR pwszProxyName, LPCWSTR pwszProxyBypass)
 {
 	m_hSession = WinHttpOpen(pwszUserAgent, dwAccessType, pwszProxyName, pwszProxyBypass, WINHTTP_FLAG_ASYNC);
-	if(m_hSession)
+	if (m_hSession)
 	{
 		WinHttpSetOption(m_hSession, WINHTTP_OPTION_MAX_CONNS_PER_SERVER, &m_maxConnectionsPerServer, sizeof(m_maxConnectionsPerServer));
 
-		if(WinHttpSetStatusCallback(m_hSession, (WINHTTP_STATUS_CALLBACK) tordex::http::http_callback, WINHTTP_CALLBACK_FLAG_ALL_NOTIFICATIONS, 0) != WINHTTP_INVALID_STATUS_CALLBACK)
+		if (WinHttpSetStatusCallback(m_hSession, (WINHTTP_STATUS_CALLBACK)tordex::http::http_callback, WINHTTP_CALLBACK_FLAG_ALL_NOTIFICATIONS, 0) != WINHTTP_INVALID_STATUS_CALLBACK)
 		{
 			return TRUE;
 		}
 	}
-	if(m_hSession)
+	if (m_hSession)
 	{
 		WinHttpCloseHandle(m_hSession);
 	}
@@ -41,23 +41,23 @@ BOOL tordex::http::open( LPCWSTR pwszUserAgent, DWORD dwAccessType, LPCWSTR pwsz
 
 void tordex::http::close()
 {
-	if(m_hSession)
+	if (m_hSession)
 	{
 		WinHttpCloseHandle(m_hSession);
 		m_hSession = NULL;
 	}
 }
 
-VOID CALLBACK tordex::http::http_callback( HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpvStatusInformation, DWORD dwStatusInformationLength )
+VOID CALLBACK tordex::http::http_callback(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpvStatusInformation, DWORD dwStatusInformationLength)
 {
 	CoInitialize(NULL);
 
 	DWORD dwError = ERROR_SUCCESS;
-	http_request* request = (http_request*) dwContext;
+	http_request* request = (http_request*)dwContext;
 
-	if(request)
+	if (request)
 	{
-		switch(dwInternetStatus)
+		switch (dwInternetStatus)
 		{
 
 		case WINHTTP_CALLBACK_STATUS_SENDREQUEST_COMPLETE:
@@ -81,7 +81,7 @@ VOID CALLBACK tordex::http::http_callback( HINTERNET hInternet, DWORD_PTR dwCont
 			break;
 		}
 
-		if(dwError != ERROR_SUCCESS)
+		if (dwError != ERROR_SUCCESS)
 		{
 			request->cancel();
 		}
@@ -90,12 +90,12 @@ VOID CALLBACK tordex::http::http_callback( HINTERNET hInternet, DWORD_PTR dwCont
 	CoUninitialize();
 }
 
-BOOL tordex::http::download_file( LPCWSTR url, http_request* request )
+BOOL tordex::http::download_file(LPCWSTR url, http_request* request)
 {
-	if(request)
+	if (request)
 	{
 		request->set_parent(this);
-		if(request->create(url, m_hSession))
+		if (request->create(url, m_hSession))
 		{
 			lock();
 			m_requests.push_back(request);
@@ -106,13 +106,13 @@ BOOL tordex::http::download_file( LPCWSTR url, http_request* request )
 	return FALSE;
 }
 
-void tordex::http::remove_request( http_request* request )
+void tordex::http::remove_request(http_request* request)
 {
 	bool is_ok = false;
 	lock();
-	for(http_request::vector::iterator i = m_requests.begin(); i != m_requests.end(); i++)
+	for (http_request::vector::iterator i = m_requests.begin(); i != m_requests.end(); i++)
 	{
-		if((*i) == request)
+		if ((*i) == request)
 		{
 			m_requests.erase(i);
 			is_ok = true;
@@ -120,7 +120,7 @@ void tordex::http::remove_request( http_request* request )
 		}
 	}
 	unlock();
-	if(is_ok)
+	if (is_ok)
 	{
 		request->release();
 	}
@@ -130,7 +130,7 @@ void tordex::http::stop()
 {
 	lock();
 
-	for(http_request::vector::iterator i = m_requests.begin(); i != m_requests.end(); i++)
+	for (http_request::vector::iterator i = m_requests.begin(); i != m_requests.end(); i++)
 	{
 		(*i)->cancel();
 	}
@@ -143,14 +143,14 @@ void tordex::http::stop()
 
 tordex::http_request::http_request()
 {
-	m_status			= 0;
-	m_error				= 0;
-	m_downloaded_length	= 0;
-	m_content_length	= 0;
-	m_refCount			= 1;
-	m_hConnection		= NULL;
-	m_hRequest			= NULL;
-	m_http				= NULL;
+	m_status = 0;
+	m_error = 0;
+	m_downloaded_length = 0;
+	m_content_length = 0;
+	m_refCount = 1;
+	m_hConnection = NULL;
+	m_hRequest = NULL;
+	m_http = NULL;
 	InitializeCriticalSection(&m_sync);
 }
 
@@ -160,9 +160,9 @@ tordex::http_request::~http_request()
 	DeleteCriticalSection(&m_sync);
 }
 
-BOOL tordex::http_request::create( LPCWSTR url, HINTERNET hSession )
+BOOL tordex::http_request::create(LPCWSTR url, HINTERNET hSession)
 {
-	m_url	= url;
+	m_url = url;
 	m_error = ERROR_SUCCESS;
 
 	URL_COMPONENTS urlComp;
@@ -170,12 +170,12 @@ BOOL tordex::http_request::create( LPCWSTR url, HINTERNET hSession )
 	ZeroMemory(&urlComp, sizeof(urlComp));
 	urlComp.dwStructSize = sizeof(urlComp);
 
-	urlComp.dwSchemeLength    = -1;
-	urlComp.dwHostNameLength  = -1;
-	urlComp.dwUrlPathLength   = -1;
+	urlComp.dwSchemeLength = -1;
+	urlComp.dwHostNameLength = -1;
+	urlComp.dwUrlPathLength = -1;
 	urlComp.dwExtraInfoLength = -1;
 
-	if(!WinHttpCrackUrl(url, lstrlen(url), 0, &urlComp))
+	if (!WinHttpCrackUrl(url, lstrlen(url), 0, &urlComp))
 	{
 		return FALSE;
 	}
@@ -186,27 +186,27 @@ BOOL tordex::http_request::create( LPCWSTR url, HINTERNET hSession )
 
 	host.insert(0, urlComp.lpszHostName, urlComp.dwHostNameLength);
 	path.insert(0, urlComp.lpszUrlPath, urlComp.dwUrlPathLength);
-	if(urlComp.dwExtraInfoLength)
+	if (urlComp.dwExtraInfoLength)
 	{
 		extra.insert(0, urlComp.lpszExtraInfo, urlComp.dwExtraInfoLength);
 	}
 
 	DWORD flags = 0;
-	if(urlComp.nScheme == INTERNET_SCHEME_HTTPS)
+	if (urlComp.nScheme == INTERNET_SCHEME_HTTPS)
 	{
 		flags = WINHTTP_FLAG_SECURE;
 	}
 
 	m_hConnection = WinHttpConnect(hSession, host.c_str(), urlComp.nPort, 0);
-	
-	PCWSTR pwszAcceptTypes[] = {L"*/*", NULL};
+
+	PCWSTR pwszAcceptTypes[] = { L"*/*", NULL };
 
 	path += extra;
 
 	m_hRequest = WinHttpOpenRequest(m_hConnection, L"GET", path.c_str(), NULL, NULL, pwszAcceptTypes, flags);
 
 	lock();
-	if(!m_hRequest)
+	if (!m_hRequest)
 	{
 		WinHttpCloseHandle(m_hConnection);
 		m_hConnection = NULL;
@@ -214,7 +214,7 @@ BOOL tordex::http_request::create( LPCWSTR url, HINTERNET hSession )
 		return FALSE;
 	}
 
-	if(!WinHttpSendRequest(m_hRequest, NULL, 0, NULL, 0, 0, (DWORD_PTR) this))
+	if (!WinHttpSendRequest(m_hRequest, NULL, 0, NULL, 0, 0, (DWORD_PTR)this))
 	{
 		WinHttpCloseHandle(m_hRequest);
 		m_hRequest = NULL;
@@ -231,12 +231,12 @@ BOOL tordex::http_request::create( LPCWSTR url, HINTERNET hSession )
 void tordex::http_request::cancel()
 {
 	lock();
-	if(m_hRequest)
+	if (m_hRequest)
 	{
 		WinHttpCloseHandle(m_hRequest);
 		m_hRequest = NULL;
 	}
-	if(m_hConnection)
+	if (m_hConnection)
 	{
 		WinHttpCloseHandle(m_hConnection);
 		m_hConnection = NULL;
@@ -249,7 +249,7 @@ DWORD tordex::http_request::onSendRequestComplete()
 	lock();
 	DWORD dwError = ERROR_SUCCESS;
 
-	if(!WinHttpReceiveResponse(m_hRequest, NULL)) 
+	if (!WinHttpReceiveResponse(m_hRequest, NULL))
 	{
 		dwError = GetLastError();
 	}
@@ -269,17 +269,19 @@ DWORD tordex::http_request::onHeadersAvailable()
 
 	OnHeadersReady(m_hRequest);
 
-	if (!WinHttpQueryHeaders(m_hRequest, WINHTTP_QUERY_FLAG_NUMBER | WINHTTP_QUERY_STATUS_CODE, NULL, &m_status, &StatusCodeLength, NULL)) 
+	if (!WinHttpQueryHeaders(m_hRequest, WINHTTP_QUERY_FLAG_NUMBER | WINHTTP_QUERY_STATUS_CODE, NULL, &m_status, &StatusCodeLength, NULL))
 	{
 		dwError = GetLastError();
-	} else
+	}
+	else
 	{
 		WCHAR buf[255];
 		DWORD len = sizeof(buf);
-		if(WinHttpQueryHeaders(m_hRequest, WINHTTP_QUERY_CONTENT_LENGTH, NULL, buf, &len, NULL))
+		if (WinHttpQueryHeaders(m_hRequest, WINHTTP_QUERY_CONTENT_LENGTH, NULL, buf, &len, NULL))
 		{
 			m_content_length = _wtoi64(buf);
-		} else
+		}
+		else
 		{
 			m_content_length = 0;
 		}
@@ -298,7 +300,7 @@ DWORD tordex::http_request::onHandleClosing()
 	WCHAR errMsg[255];
 	errMsg[0] = 0;
 
-	if(m_error)
+	if (m_error)
 	{
 		FormatMessage(FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_FROM_SYSTEM, GetModuleHandle(L"winhttp.dll"), m_error, 0, errMsg, 255, NULL);
 	}
@@ -319,7 +321,7 @@ DWORD tordex::http_request::readData()
 {
 	DWORD dwError = ERROR_SUCCESS;
 
-	if (!WinHttpReadData(m_hRequest, m_buffer,  sizeof(m_buffer), NULL))
+	if (!WinHttpReadData(m_hRequest, m_buffer, sizeof(m_buffer), NULL))
 	{
 		dwError = GetLastError();
 	}
@@ -338,7 +340,8 @@ DWORD tordex::http_request::onReadComplete(DWORD len)
 		OnData(m_buffer, len, m_downloaded_length, m_content_length);
 		dwError = readData();
 		unlock();
-	} else
+	}
+	else
 	{
 		cancel();
 	}
@@ -361,12 +364,12 @@ void tordex::http_request::release()
 	}
 }
 
-void tordex::http_request::set_parent( http* parent )
+void tordex::http_request::set_parent(http* parent)
 {
 	m_http = parent;
 }
 
-void tordex::http_request::OnHeadersReady( HINTERNET hRequest )
+void tordex::http_request::OnHeadersReady(HINTERNET hRequest)
 {
 
 }

@@ -43,7 +43,7 @@ public:
 	void	OnMouseMove(int x, int y);
 	void	setRect(LPRECT rcText);
 	void	setText(LPCWSTR text);
-	LPCWSTR getText()	{ return m_text.c_str(); }
+	LPCWSTR getText() { return m_text.c_str(); }
 	void	setFont(cairo_font* font, litehtml::web_color& color);
 	void	draw(cairo_t* cr);
 	void	setSelection(int start, int end);
@@ -69,5 +69,5 @@ private:
 
 	void	drawText(cairo_t* cr, LPCWSTR text, int cbText, LPRECT rcText, litehtml::web_color textColor);
 	void	getTextExtentPoint(LPCWSTR text, int cbText, LPSIZE sz);
-	void	set_color(cairo_t* cr, litehtml::web_color color)	{ cairo_set_source_rgba(cr, color.red / 255.0, color.green / 255.0, color.blue / 255.0, color.alpha / 255.0); }
+	void	set_color(cairo_t* cr, litehtml::web_color color) { cairo_set_source_rgba(cr, color.red / 255.0, color.green / 255.0, color.blue / 255.0, color.alpha / 255.0); }
 };
